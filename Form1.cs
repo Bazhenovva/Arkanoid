@@ -1,4 +1,3 @@
-using Arkanoid.Classes;
 using Arkanoid.Models;
 using System;
 using System.Collections.Generic;
@@ -25,7 +24,7 @@ public partial class Form1 : Form
 
     private void Form1_Paint(object sender, PaintEventArgs e)
     {
-        //  фон из ресурсов
+        // Рисуем фон из ресурсов
         try
         {
             var bg = Properties.Resources.backgroundImg;
@@ -45,7 +44,7 @@ public partial class Form1 : Form
 
         // Отрисовка шара и платформы
         e.Graphics.FillEllipse(Brushes.White, ball.Rect);
-        e.Graphics.FillRectangle(Brushes.Orange, paddle.Rect);
+        e.Graphics.FillRectangle(Brushes.DarkViolet, paddle.Rect);
 
         // Отрисовка блоков
         foreach (var block in Blocks)
@@ -54,7 +53,10 @@ public partial class Form1 : Form
             {
                 Brush brush = block.Type switch
                 {
-                    BlockType.Red => Brushes.Red, BlockType.Green => Brushes.Green, BlockType.Blue => Brushes.Blue, _ => Brushes.Blue
+                    BlockType.Red => Brushes.Red,
+                    BlockType.Green => Brushes.Green,
+                    BlockType.Blue => Brushes.Blue,
+                    _ => Brushes.Blue
                 };
                 e.Graphics.FillRectangle(brush, block.Rect);
                 e.Graphics.DrawRectangle(Pens.Black, block.Rect);
@@ -87,7 +89,7 @@ public partial class Form1 : Form
         var startYPaddle = startYBall + ballHeight;
         paddle = new Paddle(new Rectangle(startXPaddle, startYPaddle, paddleWidth, paddleHeight));
 
-        // Блоки
+        // -------- БЛОКИ --------
         var blockWidth = MaxX / Cols;
         var blockHeight = MaxY / (Rows * 2);
         var startBlockY = 50;
@@ -96,21 +98,36 @@ public partial class Form1 : Form
 
         for (var row = 0; row < Rows; row++)
         {
-            var blockType = row switch
-            {
-                < 3 => BlockType.Red,
-                < 6 => BlockType.Green,
-                _ => BlockType.Blue
-            };
-
             for (var col = 0; col < Cols; col++)
             {
                 var x = col * blockWidth;
                 var y = startBlockY + row * blockHeight;
+
+                // Случайный выбор типа блока
+                var rand = random.Next(0, 3);
+                BlockType type;
+                int health;
+
+                switch (rand)
+                {
+                    case 0:
+                        type = BlockType.Blue;   // синий — 1 удар
+                        health = 1;
+                        break;
+                    case 1:
+                        type = BlockType.Green;  // зелёный — 2 удара
+                        health = 2;
+                        break;
+                    default: // case 2
+                        type = BlockType.Red;    // красный — 3 удара
+                        health = 3;
+                        break;
+                }
+
                 Blocks.Add(new Block(
                     new Rectangle(x + blockBorder / 2, y + blockBorder / 2, blockWidth - blockBorder, blockHeight - blockBorder),
-                    health: 1,
-                    type: blockType));
+                    health: health,
+                    type: type));
             }
         }
     }
@@ -198,7 +215,7 @@ public partial class Form1 : Form
                 {
                     Invalidate();
                     timer.Stop();
-                    MessageBox.Show("Вы выиграли :)", "Победа", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Вы выиграли ", "Победа", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     Close();
                 }
                 break;
@@ -210,7 +227,7 @@ public partial class Form1 : Form
         if (ball.Rect.Top > MaxY)
         {
             timer.Stop();
-            MessageBox.Show("Вы проиграли ", "Поражение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Вы проиграли", "Поражение", MessageBoxButtons.OK, MessageBoxIcon.Information);
             Close();
         }
     }

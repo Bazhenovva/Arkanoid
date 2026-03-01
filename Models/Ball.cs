@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Arkanoid.Classes;
+namespace Arkanoid.Models;
 
 internal class Ball
 {
