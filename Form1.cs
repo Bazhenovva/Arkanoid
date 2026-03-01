@@ -54,10 +54,7 @@ public partial class Form1 : Form
             {
                 Brush brush = block.Type switch
                 {
-                    BlockType.Red => Brushes.Red,
-                    BlockType.Green => Brushes.Green,
-                    BlockType.Blue => Brushes.Blue,
-                    _ => Brushes.Blue
+                    BlockType.Red => Brushes.Red, BlockType.Green => Brushes.Green, BlockType.Blue => Brushes.Blue, _ => Brushes.Blue
                 };
                 e.Graphics.FillRectangle(brush, block.Rect);
                 e.Graphics.DrawRectangle(Pens.Black, block.Rect);
