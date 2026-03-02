@@ -8,6 +8,7 @@ namespace Arkanoid;
 
 public partial class Form1 : Form
 {
+    // === ИСХОДНЫЕ ПОЛЯ ARKANOID (без изменений) ===
     private bool gameStarted = false;
     private Ball ball = null!;
     private Paddle paddle = null!;
@@ -17,36 +18,63 @@ public partial class Form1 : Form
     private const int Cols = 6;
     private readonly Random random = new();
 
+    // === BUFFER (техника из SnowfallForm) ===
+    private Bitmap? buffer;
+    private Graphics? bufferGraphics;
+    // =========================================
+
     public Form1()
     {
         InitializeComponent();
+        this.DoubleBuffered = true;
+        this.KeyPreview = true;
     }
 
-    private void Form1_Paint(object sender, PaintEventArgs e)
+    // Инициализация буфера (один раз)
+    private void InitBuffer()
     {
-        // Рисуем фон из ресурсов
+        bufferGraphics?.Dispose();
+        buffer?.Dispose();
+
+        if (ClientSize.Width > 0 && ClientSize.Height > 0)
+        {
+            buffer = new Bitmap(ClientSize.Width, ClientSize.Height);
+            bufferGraphics = Graphics.FromImage(buffer);
+            bufferGraphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        }
+    }
+
+    // Рендер в буфер (логика отрисовки из Form1_Paint, но рисуем в bufferGraphics)
+    private void RenderToBuffer()
+    {
+        if (buffer == null || bufferGraphics == null)
+        {
+            return;
+        }
+
+        // Фон (как в оригинале)
         try
         {
             var bg = Properties.Resources.backgroundImg;
             if (bg != null)
             {
-                e.Graphics.DrawImage(bg, 0, 0, ClientSize.Width, ClientSize.Height);
+                bufferGraphics.DrawImage(bg, 0, 0, ClientSize.Width, ClientSize.Height);
             }
             else
             {
-                e.Graphics.Clear(Color.Black);
+                bufferGraphics.Clear(Color.Black);
             }
         }
         catch
         {
-            e.Graphics.Clear(Color.Black);
+            bufferGraphics.Clear(Color.Black);
         }
 
-        // Отрисовка шара и платформы
-        e.Graphics.FillEllipse(Brushes.White, ball.Rect);
-        e.Graphics.FillRectangle(Brushes.DarkViolet, paddle.Rect);
+        // Шар и платформа (как в оригинале)
+        bufferGraphics.FillEllipse(Brushes.White, ball.Rect);
+        bufferGraphics.FillRectangle(Brushes.DarkViolet, paddle.Rect);
 
-        // Отрисовка блоков
+        // Блоки (как в оригинале)
         foreach (var block in Blocks)
         {
             if (!block.IsDestroyed)
@@ -58,12 +86,23 @@ public partial class Form1 : Form
                     BlockType.Blue => Brushes.Blue,
                     _ => Brushes.Blue
                 };
-                e.Graphics.FillRectangle(brush, block.Rect);
-                e.Graphics.DrawRectangle(Pens.Black, block.Rect);
+                bufferGraphics.FillRectangle(brush, block.Rect);
+                bufferGraphics.DrawRectangle(Pens.Black, block.Rect);
             }
         }
     }
 
+    // Прямой вывод буфера на экран (как в SnowfallForm)
+    private void BlitBufferToScreen()
+    {
+        if (buffer != null)
+        {
+            using var g = CreateGraphics();
+            g.DrawImage(buffer, 0, 0);
+        }
+    }
+
+    // === Form1_Load: инициализация (как в оригинале) ===
     private void Form1_Load(object sender, EventArgs e)
     {
         MinX = 0;
@@ -71,7 +110,10 @@ public partial class Form1 : Form
         MinY = 0;
         MaxY = ClientSize.Height;
 
-        // Шар: 20x20
+        // Инициализация буфера
+        InitBuffer();
+
+        // Шар: 20x20 (как в оригинале)
         var ballWidth = 20;
         var ballHeight = 20;
         var startXBall = (MaxX - ballWidth) / 2;
@@ -82,14 +124,14 @@ public partial class Form1 : Form
         ball.SpeedX = random.Next(1, 5) * direction;
         ball.SpeedY = random.Next(-10, -5);
 
-        // Платформа: 110x20
+        // Платформа: 110x20 (как в оригинале)
         var paddleWidth = 110;
         var paddleHeight = 20;
         var startXPaddle = (MaxX - paddleWidth) / 2;
         var startYPaddle = startYBall + ballHeight;
         paddle = new Paddle(new Rectangle(startXPaddle, startYPaddle, paddleWidth, paddleHeight));
 
-        // -------- БЛОКИ --------
+        // -------- БЛОКИ (как в оригинале) --------
         var blockWidth = MaxX / Cols;
         var blockHeight = MaxY / (Rows * 2);
         var startBlockY = 50;
@@ -103,7 +145,6 @@ public partial class Form1 : Form
                 var x = col * blockWidth;
                 var y = startBlockY + row * blockHeight;
 
-                // Случайный выбор типа блока
                 var rand = random.Next(0, 3);
                 BlockType type;
                 int health;
@@ -111,15 +152,15 @@ public partial class Form1 : Form
                 switch (rand)
                 {
                     case 0:
-                        type = BlockType.Blue;   // синий — 1 удар
+                        type = BlockType.Blue;
                         health = 1;
                         break;
                     case 1:
-                        type = BlockType.Green;  // зелёный — 2 удара
+                        type = BlockType.Green;
                         health = 2;
                         break;
-                    default: // case 2
-                        type = BlockType.Red;    // красный — 3 удара
+                    default:
+                        type = BlockType.Red;
                         health = 3;
                         break;
                 }
@@ -130,8 +171,26 @@ public partial class Form1 : Form
                     type: type));
             }
         }
+
+        // Первая отрисовка через буфер
+        RenderToBuffer();
+        BlitBufferToScreen();
     }
 
+    // Пересоздание буфера при изменении размера (обязательно для этого подхода)
+    private void Form1_Resize(object sender, EventArgs e)
+    {
+        if (ClientSize.Width > 0 && ClientSize.Height > 0)
+        {
+            MinX = 0; MaxX = ClientSize.Width;
+            MinY = 0; MaxY = ClientSize.Height;
+            InitBuffer();
+            RenderToBuffer();
+            BlitBufferToScreen();
+        }
+    }
+
+    // === MouseMove: логика без изменений ===
     private void Form1_MouseMove(object sender, MouseEventArgs e)
     {
         var newX = e.X - paddle.Rect.Width / 2;
@@ -159,10 +218,14 @@ public partial class Form1 : Form
                 ballX = MaxX - ball.Rect.Width;
             }
             ball.SetBallPos(ballX, ball.Rect.Y);
-            Invalidate();
+
+            // Вместо Invalidate(): рендер в буфер + прямой вывод
+            RenderToBuffer();
+            BlitBufferToScreen();
         }
     }
 
+    // === MouseClick: без изменений ===
     private void Form1_MouseClick(object sender, MouseEventArgs e)
     {
         if (!gameStarted)
@@ -172,6 +235,7 @@ public partial class Form1 : Form
         timer.Start();
     }
 
+    // === Timer_Tick: вся игровая логика как в оригинале ===
     private void Timer_Tick(object sender, EventArgs e)
     {
         ball.SetBallPos(ball.Rect.X + ball.SpeedX, ball.Rect.Y + ball.SpeedY);
@@ -213,16 +277,22 @@ public partial class Form1 : Form
 
                 if (block.IsDestroyed && IsGameWon())
                 {
-                    Invalidate();
+                    // Финальный рендер перед закрытием
+                    RenderToBuffer();
+                    BlitBufferToScreen();
                     timer.Stop();
                     MessageBox.Show("Вы выиграли ", "Победа", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     Close();
+                    return;
                 }
                 break;
             }
         }
 
-        Invalidate();
+        // === ЗАМЕНА Invalidate() на буферный рендер ===
+        RenderToBuffer();
+        BlitBufferToScreen();
+        // ============================================
 
         if (ball.Rect.Top > MaxY)
         {
@@ -233,4 +303,6 @@ public partial class Form1 : Form
     }
 
     private bool IsGameWon() => Blocks.All(b => b.IsDestroyed);
+
+
 }

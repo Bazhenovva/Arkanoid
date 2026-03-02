@@ -1,4 +1,4 @@
-﻿namespace Arkanoid;
+﻿﻿namespace Arkanoid;
 
 partial class Form1
 {
@@ -31,14 +31,14 @@ partial class Form1
         this.components = new System.ComponentModel.Container();
         this.timer = new System.Windows.Forms.Timer(this.components);
         this.SuspendLayout();
-        // 
+        //
         // timer
-        // 
+        //
         this.timer.Interval = 10;
         this.timer.Tick += new System.EventHandler(this.Timer_Tick);
-        // 
+        //
         // Form1
-        // 
+        //
         this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         this.BackColor = System.Drawing.Color.Black;
@@ -51,7 +51,6 @@ partial class Form1
         this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
         this.Text = "Arkanoid";
         this.Load += new System.EventHandler(this.Form1_Load);
-        this.Paint += new System.Windows.Forms.PaintEventHandler(this.Form1_Paint);
         this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseClick);
         this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseMove);
         this.ResumeLayout(false);
