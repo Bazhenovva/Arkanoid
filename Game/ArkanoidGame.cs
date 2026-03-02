@@ -1,4 +1,3 @@
-// Game/ArkanoidGame.cs
 using Arkanoid.Models;
 using System;
 using System.Collections.Generic;
@@ -8,22 +7,17 @@ namespace Arkanoid.Game;
 
 public class ArkanoidGame
 {
-    // про тяжелый шар
     private DateTime heavyBallEndTime = DateTime.MinValue;
-    private const int HeavyBallDuration = 10; // 10 секунд состояние тяжелого шара при его рандомном выпадении
-    // Очки
+
     public int Score { get; private set; } = 0;
     public event Action<int>? ScoreChanged;
 
-    // Состояние игры
     public GameStatus Status { get; private set; } = GameStatus.NotStarted;
 
-    // Объекты
     public Ball Ball { get; private set; } = null!;
     public Paddle Paddle { get; private set; } = null!;
     public List<Block> Blocks { get; private set; } = [];
 
-    // Границы поля
     public int MinX { get; private set; }
     public int MaxX { get; private set; }
     public int MinY { get; private set; }
@@ -31,7 +25,6 @@ public class ArkanoidGame
 
     private readonly Random random = new();
 
-    // События для уведомления UI
     public event Action? StateChanged;
     public event Action? GameWon;
     public event Action? GameLost;
@@ -51,16 +44,18 @@ public class ArkanoidGame
     private void InitializeObjects()
     {
         // Шар
-        var startX = (MaxX - GameSettings.BallWidth) / 2;
-        var startY = MaxY - 175;
+        var startX = (MaxX - GameSettings.BallWidth) / GameSettings.Half;
+        var startY = MaxY - GameSettings.BallStartOffsetY;
         Ball = new Ball(new Rectangle(startX, startY, GameSettings.BallWidth, GameSettings.BallHeight));
 
-        var direction = random.Next(0, 2) == 0 ? -1 : 1;
-        Ball.SpeedX = random.Next(GameSettings.MinSpeed, GameSettings.MaxSpeedX + 1) * direction;
-        Ball.SpeedY = random.Next(GameSettings.MinSpeedY, GameSettings.MaxSpeedY + 1);
+        var direction = random.Next(0, GameSettings.DirectionRandomRange) == 0
+            ? GameSettings.DirectionLeft
+            : GameSettings.DirectionRight;
+        Ball.SpeedX = random.Next(GameSettings.MinSpeedX, GameSettings.MaxSpeedX + GameSettings.RandomMaxInclusive) * direction;
+        Ball.SpeedY = random.Next(GameSettings.MinSpeedY, GameSettings.MaxSpeedY + GameSettings.RandomMaxInclusive);
 
         // Платформа
-        var paddleX = (MaxX - GameSettings.PaddleWidth) / 2;
+        var paddleX = (MaxX - GameSettings.PaddleWidth) / GameSettings.Half;
         var paddleY = startY + GameSettings.BallHeight;
         Paddle = new Paddle(new Rectangle(paddleX, paddleY, GameSettings.PaddleWidth, GameSettings.PaddleHeight));
 
@@ -71,7 +66,7 @@ public class ArkanoidGame
     private void CreateBlocks()
     {
         var blockWidth = MaxX / GameSettings.Cols;
-        var blockHeight = MaxY / (GameSettings.Rows * 2);
+        var blockHeight = MaxY / (GameSettings.Rows * GameSettings.Half);
         Blocks.Clear();
 
         for (var row = 0; row < GameSettings.Rows; row++)
@@ -81,24 +76,24 @@ public class ArkanoidGame
                 var x = col * blockWidth;
                 var y = GameSettings.StartBlockY + row * blockHeight;
 
-                var rand = random.Next(0, 3);
+                var rand = random.Next(0, GameSettings.BlockTypeRandomRange);
                 var (type, health) = rand switch
                 {
-                    0 => (BlockType.Blue, 1),
-                    1 => (BlockType.Green, 2),
-                    _ => (BlockType.Red, 3)
+                    0 => (BlockType.Blue, GameSettings.BlockHealthBlue),
+                    1 => (BlockType.Green, GameSettings.BlockHealthGreen),
+                    _ => (BlockType.Red, GameSettings.BlockHealthRed)
                 };
 
                 var block = new Block(
                     new Rectangle(
-                        x + GameSettings.BlockBorder / 2,
-                        y + GameSettings.BlockBorder / 2,
+                        x + GameSettings.BlockBorder / GameSettings.Half,
+                        y + GameSettings.BlockBorder / GameSettings.Half,
                         blockWidth - GameSettings.BlockBorder,
                         blockHeight - GameSettings.BlockBorder),
                     health: health,
                     type: type);
 
-                block.HasBonus = random.Next(0, 100) < 35; // 35% шанс бонуса
+                block.HasBonus = random.Next(0, GameSettings.BonusChanceRandomRange) < GameSettings.BonusChancePercent;
                 Blocks.Add(block);
             }
         }
@@ -155,16 +150,16 @@ public class ArkanoidGame
 
         Ball.SpeedY = -Ball.SpeedY;
 
-        var hitPos = Ball.Rect.X + Ball.Rect.Width / 2 - Paddle.Rect.X;
-        var third = Paddle.Rect.Width / 3;
+        var hitPos = Ball.Rect.X + Ball.Rect.Width / GameSettings.Half - Paddle.Rect.X;
+        var zoneWidth = Paddle.Rect.Width / GameSettings.PaddleZones;
 
-        Ball.SpeedX = hitPos < third
-            ? -random.Next(GameSettings.MinSpeed, GameSettings.MaxSpeedX + 1)
-            : hitPos < 2 * third
+        Ball.SpeedX = hitPos < zoneWidth
+            ? -random.Next(GameSettings.MinSpeedX, GameSettings.MaxSpeedX + GameSettings.RandomMaxInclusive)
+            : hitPos < GameSettings.Half * zoneWidth
                 ? 0
-                : random.Next(GameSettings.MinSpeed, GameSettings.MaxSpeedX + 1);
+                : random.Next(GameSettings.MinSpeedX, GameSettings.MaxSpeedX + GameSettings.RandomMaxInclusive);
 
-        Ball.SpeedY = random.Next(GameSettings.MinSpeedY, GameSettings.MaxSpeedY + 1);
+        Ball.SpeedY = random.Next(GameSettings.MinSpeedY, GameSettings.MaxSpeedY + GameSettings.RandomMaxInclusive);
     }
 
     private void CheckBlockCollisions()
@@ -174,7 +169,6 @@ public class ArkanoidGame
             if (!block.IsDestroyed && Ball.Rect.IntersectsWith(block.Rect))
             {
                 block.Health -= Ball.Damage;
-
                 Ball.SpeedY = -Ball.SpeedY;
 
                 if (block.Health <= 0)
@@ -185,8 +179,8 @@ public class ArkanoidGame
 
                     if (block.HasBonus)
                     {
-                        Ball.Damage = 2; // тяжёлый мяч
-                        heavyBallEndTime = DateTime.Now.AddSeconds(HeavyBallDuration);
+                        Ball.Damage = GameSettings.HeavyBallDamage;
+                        heavyBallEndTime = DateTime.Now.AddSeconds(GameSettings.HeavyBallDuration);
                     }
 
                     if (IsGameWon())
@@ -198,13 +192,21 @@ public class ArkanoidGame
                 break;
             }
         }
+    }
 
+    private void CheckHeavyBallExpiration()
+    {
+        if (DateTime.Now > heavyBallEndTime && Ball.Damage > 1)
+        {
+           Ball.Damage = 1;
+        }
     }
 
     private void CheckGameOver()
     {
         if (Ball.Rect.Top > MaxY)
         {
+            Ball.Damage = 1;
             Status = GameStatus.Lost;
             GameLost?.Invoke();
         }
@@ -214,13 +216,13 @@ public class ArkanoidGame
 
     public void MovePaddleTo(int x)
     {
-        var newX = x - Paddle.Rect.Width / 2;
+        var newX = x - Paddle.Rect.Width / GameSettings.Half;
         newX = Math.Max(MinX, Math.Min(newX, MaxX - Paddle.Rect.Width));
         Paddle.SetPaddlePos(newX);
 
         if (Status == GameStatus.NotStarted)
         {
-            var ballX = Paddle.Rect.X + (Paddle.Rect.Width - Ball.Rect.Width) / 2;
+            var ballX = Paddle.Rect.X + (Paddle.Rect.Width - Ball.Rect.Width) / GameSettings.Half;
             ballX = Math.Max(MinX, Math.Min(ballX, MaxX - Ball.Rect.Width));
             Ball.SetBallPos(ballX, Ball.Rect.Y);
         }
@@ -233,12 +235,5 @@ public class ArkanoidGame
         SetFieldSize(width, height);
         InitializeObjects();
         StateChanged?.Invoke();
-    }
-    private void CheckHeavyBallExpiration()
-    {
-        if (DateTime.Now > heavyBallEndTime && Ball.Damage > 1)
-        {
-            Ball.Damage = 1; // Сброс
-        }
     }
 }

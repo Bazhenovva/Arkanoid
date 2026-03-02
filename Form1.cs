@@ -9,19 +9,14 @@ namespace Arkanoid;
 public partial class Form1 : Form
 {
     private ArkanoidGame game = null!;
-
-    // Buffer для отрисовки (как в SnowfallForm)
     private Bitmap? buffer;
     private Graphics? bufferGraphics;
-
-      private Font scoreFont = new Font("Arial", 16, FontStyle.Bold);
-      private Font bonusFont = new Font("Arial", 10, FontStyle.Italic);
+    private Font scoreFont = new Font("Arial", GameSettings.ScoreFontSize, FontStyle.Bold);
+    private Font bonusFont = new Font("Arial", GameSettings.BonusFontSize, FontStyle.Italic);
 
     public Form1()
     {
         InitializeComponent();
-        this.DoubleBuffered = true;
-        this.KeyPreview = true;
     }
 
     private void InitBuffer()
@@ -44,13 +39,12 @@ public partial class Form1 : Form
             return;
         }
 
-        // Фон
         try
         {
             var bg = Properties.Resources.backgroundImg;
             if (bg != null)
             {
-                bufferGraphics.DrawImage(bg, 0, 0, ClientSize.Width, ClientSize.Height);
+                bufferGraphics.DrawImage(bg, GameSettings.ImagePositionX, GameSettings.ImagePositionY, ClientSize.Width, ClientSize.Height);
             }
             else
             {
@@ -59,16 +53,14 @@ public partial class Form1 : Form
         }
         catch { bufferGraphics.Clear(Color.Black); }
 
-        // Шар и платформа
         bufferGraphics.FillEllipse(Brushes.White, game.Ball.Rect);
         bufferGraphics.FillRectangle(Brushes.DarkViolet, game.Paddle.Rect);
 
-        // Блоки
         foreach (var block in game.Blocks)
         {
             if (!block.IsDestroyed)
             {
-                Brush brush = block.Type switch
+                var brush = block.Type switch
                 {
                     BlockType.Red => Brushes.Red,
                     BlockType.Green => Brushes.Green,
@@ -79,13 +71,24 @@ public partial class Form1 : Form
                 bufferGraphics.DrawRectangle(Pens.Black, block.Rect);
             }
         }
-        // гототвый шрифт
-        bufferGraphics.DrawString($"Очки: {game.Score}", scoreFont, Brushes.White, 10, 10);
 
-        // Если мяч тяжёлый — покажи индикатор
+        // Отрисовка счёта
+        bufferGraphics.DrawString(
+            $"Очки: {game.Score}",
+            scoreFont,
+            Brushes.White,
+            GameSettings.ScoreTextX,
+            GameSettings.ScoreTextY);
+
+        // Отрисовка индикатора тяжёлого мяча
         if (game.Ball.Damage > 1)
         {
-            bufferGraphics.DrawString(" ТЯЖЁЛЫЙ МЯЧ!", bonusFont, Brushes.Orange, ClientSize.Width - 200, 10);
+            bufferGraphics.DrawString(
+                " ТЯЖЁЛЫЙ МЯЧ!",
+                bonusFont,
+                Brushes.Orange,
+                ClientSize.Width - GameSettings.BonusTextX,
+                GameSettings.BonusTextY);
         }
     }
 
@@ -94,16 +97,14 @@ public partial class Form1 : Form
         if (buffer != null)
         {
             using var g = CreateGraphics();
-            g.DrawImage(buffer, 0, 0);
+            g.DrawImage(buffer, GameSettings.ImagePositionX, GameSettings.ImagePositionY);
         }
     }
 
     private void Form1_Load(object sender, EventArgs e)
     {
-        // Создаём игру с размерами формы
         game = new ArkanoidGame(ClientSize.Width, ClientSize.Height);
 
-        // Подписываемся на события игры
         game.StateChanged += () => { RenderToBuffer(); BlitBufferToScreen(); };
         game.ScoreChanged += (score) => { RenderToBuffer(); BlitBufferToScreen(); };
         game.GameWon += () =>
@@ -124,17 +125,6 @@ public partial class Form1 : Form
         BlitBufferToScreen();
     }
 
-    private void Form1_Resize(object sender, EventArgs e)
-    {
-        if (ClientSize.Width > 0 && ClientSize.Height > 0)
-        {
-            game.ResizeField(ClientSize.Width, ClientSize.Height);
-            InitBuffer();
-            RenderToBuffer();
-            BlitBufferToScreen();
-        }
-    }
-
     private void Form1_MouseMove(object sender, MouseEventArgs e)
     {
         game.MovePaddleTo(e.X);
@@ -148,28 +138,10 @@ public partial class Form1 : Form
         timer.Start();
     }
 
-    private void Form1_KeyDown(object sender, KeyEventArgs e)
-    {
-        if (e.KeyCode == Keys.Escape)
-        {
-            timer.Stop();
-            Close();
-        }
-    }
-
     private void Timer_Tick(object sender, EventArgs e)
     {
-        game.Update(); // Вся логика здесь
-        RenderToBuffer(); // Отрисовка текущего состояния
+        game.Update();
+        RenderToBuffer();
         BlitBufferToScreen();
-    }
-
-    protected override void OnFormClosing(FormClosingEventArgs e)
-    {
-        bufferGraphics?.Dispose();
-        buffer?.Dispose();
-        scoreFont.Dispose();
-        bonusFont.Dispose();
-        base.OnFormClosing(e);
     }
 }

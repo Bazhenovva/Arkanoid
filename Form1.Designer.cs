@@ -1,4 +1,4 @@
-﻿﻿namespace Arkanoid;
+﻿namespace Arkanoid;
 
 partial class Form1
 {
@@ -17,6 +17,11 @@ partial class Form1
         {
             components.Dispose();
         }
+        // Диспозим свои ресурсы
+        bufferGraphics?.Dispose();
+        buffer?.Dispose();
+        scoreFont?.Dispose();
+        bonusFont?.Dispose();
         base.Dispose(disposing);
     }
 
@@ -50,6 +55,7 @@ partial class Form1
         this.Name = "Form1";
         this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
         this.Text = "Arkanoid";
+        this.KeyPreview = true;
         this.Load += new System.EventHandler(this.Form1_Load);
         this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseClick);
         this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseMove);
