@@ -2,7 +2,7 @@
 
 namespace Arkanoid.Models;
 
-internal class Paddle
+public class Paddle
 {
     public Rectangle Rect { get; set; }
 

@@ -2,7 +2,7 @@
 
 namespace Arkanoid.Models;
 
-internal class Ball
+public class Ball
 {
     public Rectangle Rect { get; set; }
     public int SpeedX { get; set; }
