@@ -8,6 +8,13 @@ namespace Arkanoid.Game;
 
 public class ArkanoidGame
 {
+    // про тяжелый шар
+    private DateTime heavyBallEndTime = DateTime.MinValue;
+    private const int HeavyBallDuration = 10; // 10 секунд состояние тяжелого шара при его рандомном выпадении
+    // Очки
+    public int Score { get; private set; } = 0;
+    public event Action<int>? ScoreChanged;
+
     // Состояние игры
     public GameStatus Status { get; private set; } = GameStatus.NotStarted;
 
@@ -77,11 +84,22 @@ public class ArkanoidGame
                 var rand = random.Next(0, 3);
                 var (type, health) = rand switch
                 {
-                    0 => (BlockType.Blue, 1), 1 => (BlockType.Green, 2), _ => (BlockType.Red, 3)
+                    0 => (BlockType.Blue, 1),
+                    1 => (BlockType.Green, 2),
+                    _ => (BlockType.Red, 3)
                 };
 
-                Blocks.Add(new Block(
-                    new Rectangle(x + GameSettings.BlockBorder / 2, y + GameSettings.BlockBorder / 2, blockWidth - GameSettings.BlockBorder, blockHeight - GameSettings.BlockBorder), health: health, type: type));
+                var block = new Block(
+                    new Rectangle(
+                        x + GameSettings.BlockBorder / 2,
+                        y + GameSettings.BlockBorder / 2,
+                        blockWidth - GameSettings.BlockBorder,
+                        blockHeight - GameSettings.BlockBorder),
+                    health: health,
+                    type: type);
+
+                block.HasBonus = random.Next(0, 100) < 35; // 35% шанс бонуса
+                Blocks.Add(block);
             }
         }
     }
@@ -103,6 +121,7 @@ public class ArkanoidGame
         }
 
         MoveBall();
+        CheckHeavyBallExpiration();
         CheckWallCollisions();
         CheckPaddleCollision();
         CheckBlockCollisions();
@@ -154,17 +173,32 @@ public class ArkanoidGame
         {
             if (!block.IsDestroyed && Ball.Rect.IntersectsWith(block.Rect))
             {
-                block.HitBlock();
+                block.Health -= Ball.Damage;
+
                 Ball.SpeedY = -Ball.SpeedY;
 
-                if (block.IsDestroyed && IsGameWon())
+                if (block.Health <= 0)
                 {
-                    Status = GameStatus.Won;
-                    GameWon?.Invoke();
+                    block.IsDestroyed = true;
+                    Score += block.GetScore();
+                    ScoreChanged?.Invoke(Score);
+
+                    if (block.HasBonus)
+                    {
+                        Ball.Damage = 2; // тяжёлый мяч
+                        heavyBallEndTime = DateTime.Now.AddSeconds(HeavyBallDuration);
+                    }
+
+                    if (IsGameWon())
+                    {
+                        Status = GameStatus.Won;
+                        GameWon?.Invoke();
+                    }
                 }
                 break;
             }
         }
+
     }
 
     private void CheckGameOver()
@@ -178,14 +212,12 @@ public class ArkanoidGame
 
     private bool IsGameWon() => Blocks.TrueForAll(b => b.IsDestroyed);
 
-    // Методы для управления из UI
     public void MovePaddleTo(int x)
     {
         var newX = x - Paddle.Rect.Width / 2;
         newX = Math.Max(MinX, Math.Min(newX, MaxX - Paddle.Rect.Width));
         Paddle.SetPaddlePos(newX);
 
-        // Если игра ещё не началась — двигаем шар вместе с платформой
         if (Status == GameStatus.NotStarted)
         {
             var ballX = Paddle.Rect.X + (Paddle.Rect.Width - Ball.Rect.Width) / 2;
@@ -199,8 +231,14 @@ public class ArkanoidGame
     public void ResizeField(int width, int height)
     {
         SetFieldSize(width, height);
-        // При ресайзе можно либо пересоздать объекты, либо масштабировать — пока оставляем как есть
         InitializeObjects();
         StateChanged?.Invoke();
+    }
+    private void CheckHeavyBallExpiration()
+    {
+        if (DateTime.Now > heavyBallEndTime && Ball.Damage > 1)
+        {
+            Ball.Damage = 1; // Сброс
+        }
     }
 }

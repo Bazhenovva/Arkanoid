@@ -14,6 +14,9 @@ public partial class Form1 : Form
     private Bitmap? buffer;
     private Graphics? bufferGraphics;
 
+      private Font scoreFont = new Font("Arial", 16, FontStyle.Bold);
+      private Font bonusFont = new Font("Arial", 10, FontStyle.Italic);
+
     public Form1()
     {
         InitializeComponent();
@@ -76,6 +79,14 @@ public partial class Form1 : Form
                 bufferGraphics.DrawRectangle(Pens.Black, block.Rect);
             }
         }
+        // гототвый шрифт
+        bufferGraphics.DrawString($"Очки: {game.Score}", scoreFont, Brushes.White, 10, 10);
+
+        // Если мяч тяжёлый — покажи индикатор
+        if (game.Ball.Damage > 1)
+        {
+            bufferGraphics.DrawString(" ТЯЖЁЛЫЙ МЯЧ!", bonusFont, Brushes.Orange, ClientSize.Width - 200, 10);
+        }
     }
 
     private void BlitBufferToScreen()
@@ -94,6 +105,7 @@ public partial class Form1 : Form
 
         // Подписываемся на события игры
         game.StateChanged += () => { RenderToBuffer(); BlitBufferToScreen(); };
+        game.ScoreChanged += (score) => { RenderToBuffer(); BlitBufferToScreen(); };
         game.GameWon += () =>
         {
             timer.Stop();
@@ -156,6 +168,8 @@ public partial class Form1 : Form
     {
         bufferGraphics?.Dispose();
         buffer?.Dispose();
+        scoreFont.Dispose();
+        bonusFont.Dispose();
         base.OnFormClosing(e);
     }
 }

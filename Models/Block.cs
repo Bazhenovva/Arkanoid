@@ -2,8 +2,9 @@
 
 namespace Arkanoid.Models;
 
-public class Block  // было internal, стало public
+public class Block
 {
+    public bool HasBonus { get; set; } = false;
     public Rectangle Rect { get; set; }
     public int Health { get; set; }
     public bool IsDestroyed { get; set; }
@@ -25,9 +26,17 @@ public class Block  // было internal, стало public
             IsDestroyed = true;
         }
     }
+    public int GetScore() => Type switch
+        {
+            BlockType.Red => 30,
+            BlockType.Green => 20,
+            BlockType.Blue => 10,
+            _ => 10
+        };
+
 }
 
-public enum BlockType  // тоже сделай public
+public enum BlockType
 {
     Red,
     Green,
