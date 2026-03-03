@@ -1,6 +1,6 @@
 ﻿namespace Arkanoid;
 
-partial class Form1
+partial class GameForm
 {
     /// <summary>
     /// Required designer variable.
@@ -52,7 +52,7 @@ partial class Form1
         this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
         this.MaximizeBox = false;
         this.MinimizeBox = false;
-        this.Name = "Form1";
+        this.Name = "GameForm";
         this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
         this.Text = "Arkanoid";
         this.KeyPreview = true;

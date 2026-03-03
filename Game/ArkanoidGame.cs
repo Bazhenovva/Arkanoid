@@ -5,30 +5,86 @@ using System.Drawing;
 
 namespace Arkanoid.Game;
 
+/// <summary>
+/// Ядро игры "Арканоид".Управляет логикой: физика мяча, коллизии, бонусы, счёт.
+/// Используется в <see cref="GameForm"/>.
+/// </summary>
 public class ArkanoidGame
 {
     private DateTime heavyBallEndTime = DateTime.MinValue;
 
+    /// <summary>
+    /// Текущий счёт игрока.
+    /// </summary>
     public int Score { get; private set; } = 0;
+
+    /// <summary>
+    /// Событие изменения счёта.Передаёт новое значение счёта.
+    /// Подписывается <see cref="GameForm"/> для обновления UI.
+    /// </summary>
     public event Action<int>? ScoreChanged;
 
+    /// <summary>
+    /// Текущее состояние игры.
+    /// </summary>
     public GameStatus Status { get; private set; } = GameStatus.NotStarted;
 
+    /// <summary>
+    /// Мяч игры.
+    /// </summary>
     public Ball Ball { get; private set; } = null!;
+
+    /// <summary>
+    /// Платформа игрока.
+    /// </summary>
     public Paddle Paddle { get; private set; } = null!;
+
+    /// <summary>
+    /// Список блоков на игровом поле.
+    /// </summary>
     public List<Block> Blocks { get; private set; } = [];
 
+    /// <summary>
+    /// Минимальная координата X игрового поля.
+    /// </summary>
     public int MinX { get; private set; }
+
+    /// <summary>
+    /// Максимальная координата X игрового поля.
+    /// </summary>
     public int MaxX { get; private set; }
+
+    /// <summary>
+    /// Минимальная координата Y игрового поля.
+    /// </summary>
     public int MinY { get; private set; }
+
+    /// <summary>
+    /// Максимальная координата Y игрового поля.
+    /// </summary>
     public int MaxY { get; private set; }
 
     private readonly Random random = new();
 
+    /// <summary>
+    /// Событие изменения состояния игры. Вызывается при любом изменении, требующем перерисовки.
+    /// </summary>
     public event Action? StateChanged;
+
+    /// <summary>
+    /// Событие победы. Вызывается при уничтожении всех блоков.
+    /// </summary>
     public event Action? GameWon;
+
+    /// <summary>
+    /// Событие поражения. Вызывается при падении мяча за нижнюю границу.
+    /// </summary>
     public event Action? GameLost;
 
+    /// <summary>
+    /// Создаёт новую игру с заданными размерами поля.
+    /// Инициализирует мяч, платформу и блоки.
+    /// </summary>
     public ArkanoidGame(int width, int height)
     {
         SetFieldSize(width, height);
@@ -43,7 +99,6 @@ public class ArkanoidGame
 
     private void InitializeObjects()
     {
-        // Шар
         var startX = (MaxX - GameSettings.BallWidth) / GameSettings.Half;
         var startY = MaxY - GameSettings.BallStartOffsetY;
         Ball = new Ball(new Rectangle(startX, startY, GameSettings.BallWidth, GameSettings.BallHeight));
@@ -54,12 +109,10 @@ public class ArkanoidGame
         Ball.SpeedX = random.Next(GameSettings.MinSpeedX, GameSettings.MaxSpeedX + GameSettings.RandomMaxInclusive) * direction;
         Ball.SpeedY = random.Next(GameSettings.MinSpeedY, GameSettings.MaxSpeedY + GameSettings.RandomMaxInclusive);
 
-        // Платформа
         var paddleX = (MaxX - GameSettings.PaddleWidth) / GameSettings.Half;
         var paddleY = startY + GameSettings.BallHeight;
         Paddle = new Paddle(new Rectangle(paddleX, paddleY, GameSettings.PaddleWidth, GameSettings.PaddleHeight));
 
-        // Блоки
         CreateBlocks();
     }
 
@@ -99,6 +152,10 @@ public class ArkanoidGame
         }
     }
 
+    /// <summary>
+    /// Запускает игру.
+    /// Меняет статус на <see cref="GameStatus.Running"/>.
+    /// </summary>
     public void Start()
     {
         if (Status == GameStatus.NotStarted)
@@ -108,6 +165,10 @@ public class ArkanoidGame
         }
     }
 
+    /// <summary>
+    /// Обновляет состояние игры.
+    /// Вызывается каждый кадр из <see cref="GameForm.Timer_Tick"/>.
+    /// </summary>
     public void Update()
     {
         if (Status != GameStatus.Running)
@@ -198,7 +259,7 @@ public class ArkanoidGame
     {
         if (DateTime.Now > heavyBallEndTime && Ball.Damage > 1)
         {
-           Ball.Damage = 1;
+            Ball.Damage = 1;
         }
     }
 
@@ -214,6 +275,9 @@ public class ArkanoidGame
 
     private bool IsGameWon() => Blocks.TrueForAll(b => b.IsDestroyed);
 
+    /// <summary>
+    /// Двигает платформу к указанной позиции X. Если игра не начата — перемещает и мяч вместе с платформой.
+    /// </summary>
     public void MovePaddleTo(int x)
     {
         var newX = x - Paddle.Rect.Width / GameSettings.Half;
@@ -230,6 +294,10 @@ public class ArkanoidGame
         StateChanged?.Invoke();
     }
 
+    /// <summary>
+    /// Изменяет размеры игрового поля и пересоздаёт объекты.
+    /// Вызывается при изменении размера окна формы.
+    /// </summary>
     public void ResizeField(int width, int height)
     {
         SetFieldSize(width, height);

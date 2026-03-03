@@ -6,7 +6,11 @@ using System.Windows.Forms;
 
 namespace Arkanoid;
 
-public partial class Form1 : Form
+/// <summary>
+/// Главная форма игры "Арканоид".Отвечает за отрисовку, обработку ввода и связь с игровым ядром.
+/// Использует <see cref="ArkanoidGame"/> для логики и <see cref="GameSettings"/> для настроек.
+/// </summary>
+public partial class GameForm : Form
 {
     private ArkanoidGame game = null!;
     private Bitmap? buffer;
@@ -14,7 +18,10 @@ public partial class Form1 : Form
     private Font scoreFont = new Font("Arial", GameSettings.ScoreFontSize, FontStyle.Bold);
     private Font bonusFont = new Font("Arial", GameSettings.BonusFontSize, FontStyle.Italic);
 
-    public Form1()
+    /// <summary>
+    /// Создаёт новую форму игры и инициализирует компоненты.
+    /// </summary>
+    public GameForm()
     {
         InitializeComponent();
     }
@@ -72,7 +79,6 @@ public partial class Form1 : Form
             }
         }
 
-        // Отрисовка счёта
         bufferGraphics.DrawString(
             $"Очки: {game.Score}",
             scoreFont,
@@ -80,7 +86,6 @@ public partial class Form1 : Form
             GameSettings.ScoreTextX,
             GameSettings.ScoreTextY);
 
-        // Отрисовка индикатора тяжёлого мяча
         if (game.Ball.Damage > 1)
         {
             bufferGraphics.DrawString(
