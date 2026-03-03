@@ -42,7 +42,7 @@ public class ArkanoidGame
     /// <summary>
     /// Список блоков на игровом поле.
     /// </summary>
-    public List<Block> Blocks { get; private set; } = [];
+    public List<Block> Blocks { get; private set; } = new List<Block>();
 
     /// <summary>
     /// Минимальная координата X игрового поля.

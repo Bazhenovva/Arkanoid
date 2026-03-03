@@ -40,22 +40,22 @@ public static class GameSettings
     /// <summary>
     /// Минимальная горизонтальная скорость мяча.
     /// </summary>
-    public const int MinSpeedX = 1;
+    public const int MinSpeedX = 3;
 
     /// <summary>
     /// Максимальная горизонтальная скорость мяча.
     /// </summary>
-    public const int MaxSpeedX = 5;
+    public const int MaxSpeedX = 8;
 
     /// <summary>
     /// Минимальная вертикальная скорость мяча (отрицательная = вверх).
     /// </summary>
-    public const int MinSpeedY = -10;
+    public const int MinSpeedY = -12;
 
     /// <summary>
     /// Максимальная вертикальная скорость мяча (отрицательная = вверх).
     /// </summary>
-    public const int MaxSpeedY = -5;
+    public const int MaxSpeedY = -8;
 
     /// <summary>
     /// Начальная координата Y для первого ряда блоков.
@@ -76,7 +76,7 @@ public static class GameSettings
     /// Интервал обновления игрового цикла в миллисекундах.
     /// Используется в <see cref="System.Windows.Forms.Timer"/>.
     /// </summary>
-    public const int TimerInterval = 10;
+    public const int TimerInterval = 5;
 
     /// <summary>
     /// Шанс выпадения бонуса при разрушении блока (в процентах).
@@ -86,7 +86,7 @@ public static class GameSettings
     /// <summary>
     /// Длительность действия бонуса "Тяжёлый мяч" в секундах.
     /// </summary>
-    public const int HeavyBallDuration = 12;
+    public const int HeavyBallDuration = 18;
 
     /// <summary>
     /// Урон "Тяжёлого мяча" по блокам.

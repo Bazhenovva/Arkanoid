@@ -1,5 +1,5 @@
 ﻿namespace Arkanoid;
-
+using Arkanoid.Game;
 partial class GameForm
 {
     /// <summary>
@@ -39,7 +39,7 @@ partial class GameForm
         //
         // timer
         //
-        this.timer.Interval = 10;
+        this.timer.Interval = GameSettings.TimerInterval;
         this.timer.Tick += new System.EventHandler(this.Timer_Tick);
         //
         // Form1
