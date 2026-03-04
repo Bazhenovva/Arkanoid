@@ -1,25 +1,27 @@
 using Arkanoid.Models;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
 
 namespace Arkanoid.Game;
 
 /// <summary>
-/// Ядро игры "Арканоид".Управляет логикой: физика мяча, коллизии, бонусы, счёт.
-/// Используется в <see cref="GameForm"/>.
+/// Ядро игры "Арканоид". Управляет логикой: физика мяча, коллизии, бонусы, счёт.
+/// Используется в <see cref="GameForm"/> для обновления состояния игры.
 /// </summary>
 public class ArkanoidGame
 {
+    public const int HeavyBallDamageThreshold = 1;
+
+    /// <summary>
+    /// Время окончания действия бонуса "Тяжёлый мяч".
+    /// </summary>
     private DateTime heavyBallEndTime = DateTime.MinValue;
 
     /// <summary>
     /// Текущий счёт игрока.
     /// </summary>
-    public int Score { get; private set; } = 0;
+    public int Score { get; private set; }
 
     /// <summary>
-    /// Событие изменения счёта.Передаёт новое значение счёта.
+    /// Событие изменения счёта. Передаёт новое значение счёта.
     /// Подписывается <see cref="GameForm"/> для обновления UI.
     /// </summary>
     public event Action<int>? ScoreChanged;
@@ -27,7 +29,7 @@ public class ArkanoidGame
     /// <summary>
     /// Текущее состояние игры.
     /// </summary>
-    public GameStatus Status { get; private set; } = GameStatus.NotStarted;
+    private GameStatus Status { get; set; }
 
     /// <summary>
     /// Мяч игры.
@@ -42,27 +44,27 @@ public class ArkanoidGame
     /// <summary>
     /// Список блоков на игровом поле.
     /// </summary>
-    public List<Block> Blocks { get; private set; } = new List<Block>();
+    public List<Block> Blocks { get; } = new List<Block>();
 
     /// <summary>
     /// Минимальная координата X игрового поля.
     /// </summary>
-    public int MinX { get; private set; }
+    private int MinX { get; set; }
 
     /// <summary>
     /// Максимальная координата X игрового поля.
     /// </summary>
-    public int MaxX { get; private set; }
+    private int MaxX { get; set; }
 
     /// <summary>
     /// Минимальная координата Y игрового поля.
     /// </summary>
-    public int MinY { get; private set; }
+    private int MinY { get; set; }
 
     /// <summary>
     /// Максимальная координата Y игрового поля.
     /// </summary>
-    public int MaxY { get; private set; }
+    private int MaxY { get; set; }
 
     private readonly Random random = new();
 
@@ -91,12 +93,18 @@ public class ArkanoidGame
         InitializeObjects();
     }
 
+    /// <summary>
+    /// Устанавливает размеры игрового поля.
+    /// </summary>
     private void SetFieldSize(int width, int height)
     {
         MinX = 0; MaxX = width;
         MinY = 0; MaxY = height;
     }
 
+    /// <summary>
+    /// Инициализирует игровые объекты: мяч, платформу, блоки.
+    /// </summary>
     private void InitializeObjects()
     {
         var startX = (MaxX - GameSettings.BallWidth) / GameSettings.Half;
@@ -116,6 +124,9 @@ public class ArkanoidGame
         CreateBlocks();
     }
 
+    /// <summary>
+    /// Создаёт сетку блоков с случайными типами и бонусами.
+    /// </summary>
     private void CreateBlocks()
     {
         var blockWidth = MaxX / GameSettings.Cols;
@@ -139,8 +150,8 @@ public class ArkanoidGame
 
                 var block = new Block(
                     new Rectangle(
-                        x + GameSettings.BlockBorder / GameSettings.Half,
-                        y + GameSettings.BlockBorder / GameSettings.Half,
+                        x + (GameSettings.BlockBorder / GameSettings.Half),
+                        y + (GameSettings.BlockBorder / GameSettings.Half),
                         blockWidth - GameSettings.BlockBorder,
                         blockHeight - GameSettings.BlockBorder),
                     health: health,
@@ -184,11 +195,17 @@ public class ArkanoidGame
         CheckGameOver();
     }
 
+    /// <summary>
+    /// Перемещает мяч на следующую позицию.
+    /// </summary>
     private void MoveBall()
     {
         Ball.SetBallPos(Ball.Rect.X + Ball.SpeedX, Ball.Rect.Y + Ball.SpeedY);
     }
 
+    /// <summary>
+    /// Проверяет столкновение мяча с границами поля (стенами).
+    /// </summary>
     private void CheckWallCollisions()
     {
         if (Ball.Rect.Left <= MinX || Ball.Rect.Right >= MaxX)
@@ -202,6 +219,10 @@ public class ArkanoidGame
         }
     }
 
+    /// <summary>
+    /// Проверяет столкновение мяча с платформой игрока.
+    /// Меняет направление мяча в зависимости от зоны удара.
+    /// </summary>
     private void CheckPaddleCollision()
     {
         if (!Ball.Rect.IntersectsWith(Paddle.Rect) || Ball.SpeedY <= 0)
@@ -223,6 +244,10 @@ public class ArkanoidGame
         Ball.SpeedY = random.Next(GameSettings.MinSpeedY, GameSettings.MaxSpeedY + GameSettings.RandomMaxInclusive);
     }
 
+    /// <summary>
+    /// Проверяет столкновение мяча с блоками.
+    /// При разрушении блока начисляет очки и проверяет условие победы.
+    /// </summary>
     private void CheckBlockCollisions()
     {
         foreach (var block in Blocks)
@@ -255,14 +280,20 @@ public class ArkanoidGame
         }
     }
 
+    /// <summary>
+    /// Проверяет, истёк ли срок действия бонуса "Тяжёлый мяч".
+    /// </summary>
     private void CheckHeavyBallExpiration()
     {
-        if (DateTime.Now > heavyBallEndTime && Ball.Damage > 1)
+        if (DateTime.Now > heavyBallEndTime && Ball.Damage > HeavyBallDamageThreshold)
         {
             Ball.Damage = 1;
         }
     }
 
+    /// <summary>
+    /// Проверяет условие проигрыша (мяч упал за нижнюю границу).
+    /// </summary>
     private void CheckGameOver()
     {
         if (Ball.Rect.Top > MaxY)
@@ -273,11 +304,16 @@ public class ArkanoidGame
         }
     }
 
+    /// <summary>
+    /// Проверяет, уничтожены ли все блоки (условие победы).
+    /// </summary>
     private bool IsGameWon() => Blocks.TrueForAll(b => b.IsDestroyed);
 
     /// <summary>
-    /// Двигает платформу к указанной позиции X. Если игра не начата — перемещает и мяч вместе с платформой.
+    /// Двигает платформу к указанной позиции X.
+    /// Если игра не начата — перемещает и мяч вместе с платформой.
     /// </summary>
+
     public void MovePaddleTo(int x)
     {
         var newX = x - Paddle.Rect.Width / GameSettings.Half;

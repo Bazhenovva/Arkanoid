@@ -74,7 +74,6 @@ public static class GameSettings
 
     /// <summary>
     /// Интервал обновления игрового цикла в миллисекундах.
-    /// Используется в <see cref="System.Windows.Forms.Timer"/>.
     /// </summary>
     public const int TimerInterval = 5;
 
@@ -105,7 +104,7 @@ public static class GameSettings
 
     /// <summary>
     /// Отступ справа для отрисовки индикатора бонуса.
-    /// Рассчитывается как <c>ClientSize.Width - BonusTextX</c>.
+    /// Рассчитывается как ClientSize.Width - BonusTextX
     /// </summary>
     public const int BonusTextX = 200;
 

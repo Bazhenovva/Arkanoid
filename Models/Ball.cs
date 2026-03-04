@@ -1,17 +1,14 @@
-﻿using System.Drawing;
-
-namespace Arkanoid.Models;
+﻿namespace Arkanoid.Models;
 
 /// <summary>
 /// Мяч в игре "Арканоид".Хранит позицию, скорость и урон.
-/// Используется в <see cref="Arkanoid.Game.ArkanoidGame"/>.
 /// </summary>
 public class Ball
 {
     /// <summary>
     /// Границы мяча на игровом поле.Включает позицию и размер.
     /// </summary>
-    public Rectangle Rect { get; set; }
+    public Rectangle Rect { get;  private set; }
 
     /// <summary>
     /// Горизонтальная скорость мяча.Положительное значение — вправо, отрицательное — влево.
@@ -32,7 +29,10 @@ public class Ball
     /// <summary>
     /// Создаёт новый мяч с заданными границами.
     /// </summary>
-    public Ball(Rectangle rect) => Rect = rect;
+    public Ball(Rectangle rect)
+    {
+        Rect = rect;
+    }
 
     /// <summary>
     /// Обновляет позицию мяча, сохраняя размер.

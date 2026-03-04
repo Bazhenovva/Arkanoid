@@ -1,13 +1,10 @@
 using Arkanoid.Game;
 using Arkanoid.Models;
-using System;
-using System.Drawing;
-using System.Windows.Forms;
 
 namespace Arkanoid;
 
 /// <summary>
-/// Главная форма игры "Арканоид".Отвечает за отрисовку, обработку ввода и связь с игровым ядром.
+/// Главная форма игры "Арканоид". Отвечает за отрисовку, обработку ввода и связь с игровым ядром.
 /// Использует <see cref="ArkanoidGame"/> для логики и <see cref="GameSettings"/> для настроек.
 /// </summary>
 public partial class GameForm : Form
@@ -15,6 +12,7 @@ public partial class GameForm : Form
     private ArkanoidGame game = null!;
     private Bitmap? buffer;
     private Graphics? bufferGraphics;
+
     private Font scoreFont = new Font("Arial", GameSettings.ScoreFontSize, FontStyle.Bold);
     private Font bonusFont = new Font("Arial", GameSettings.BonusFontSize, FontStyle.Italic);
 
@@ -26,19 +24,27 @@ public partial class GameForm : Form
         InitializeComponent();
     }
 
+    /// <summary>
+    /// Инициализирует буфер двойной буферизации для плавной отрисовки.
+    /// </summary>
     private void InitBuffer()
     {
         bufferGraphics?.Dispose();
         buffer?.Dispose();
 
-        if (ClientSize.Width > 0 && ClientSize.Height > 0)
+        if (ClientSize.Width <= 0 || ClientSize.Height <= 0)
         {
-            buffer = new Bitmap(ClientSize.Width, ClientSize.Height);
-            bufferGraphics = Graphics.FromImage(buffer);
-            bufferGraphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            return;
         }
+
+        buffer = new Bitmap(ClientSize.Width, ClientSize.Height);
+        bufferGraphics = Graphics.FromImage(buffer);
+        bufferGraphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
     }
 
+    /// <summary>
+    /// Отрисовывает текущее состояние игры в буфер.
+    /// </summary>
     private void RenderToBuffer()
     {
         if (buffer == null || bufferGraphics == null)
@@ -46,19 +52,15 @@ public partial class GameForm : Form
             return;
         }
 
-        try
+        var bg = Properties.Resources.backgroundImg;
+        if (bg != null)
         {
-            var bg = Properties.Resources.backgroundImg;
-            if (bg != null)
-            {
-                bufferGraphics.DrawImage(bg, GameSettings.ImagePositionX, GameSettings.ImagePositionY, ClientSize.Width, ClientSize.Height);
-            }
-            else
-            {
-                bufferGraphics.Clear(Color.Black);
-            }
+            bufferGraphics.DrawImage(bg, GameSettings.ImagePositionX, GameSettings.ImagePositionY, ClientSize.Width, ClientSize.Height);
         }
-        catch { bufferGraphics.Clear(Color.Black); }
+        else
+        {
+            bufferGraphics.Clear(Color.Black);
+        }
 
         bufferGraphics.FillEllipse(Brushes.White, game.Ball.Rect);
         bufferGraphics.FillRectangle(Brushes.DarkViolet, game.Paddle.Rect);
@@ -71,7 +73,6 @@ public partial class GameForm : Form
                 {
                     BlockType.Red => Brushes.Red,
                     BlockType.Green => Brushes.Green,
-                    BlockType.Blue => Brushes.Blue,
                     _ => Brushes.Blue
                 };
                 bufferGraphics.FillRectangle(brush, block.Rect);
@@ -86,7 +87,7 @@ public partial class GameForm : Form
             GameSettings.ScoreTextX,
             GameSettings.ScoreTextY);
 
-        if (game.Ball.Damage > 1)
+        if (game.Ball.Damage > ArkanoidGame.HeavyBallDamageThreshold)
         {
             bufferGraphics.DrawString(
                 " ТЯЖЁЛЫЙ МЯЧ!",
@@ -97,6 +98,9 @@ public partial class GameForm : Form
         }
     }
 
+    /// <summary>
+    /// Копирует буфер на экран формы
+    /// </summary>
     private void BlitBufferToScreen()
     {
         if (buffer != null)
@@ -106,47 +110,87 @@ public partial class GameForm : Form
         }
     }
 
+    /// <summary>
+    /// Обновляет экран: перерисовывает буфер и выводит на форму.
+    /// </summary>
+    private void UpdateDisplay()
+    {
+        RenderToBuffer();
+        BlitBufferToScreen();
+    }
+
+    /// <summary>
+    /// Обработчик события победы в игре.
+    /// </summary>
+    private void OnGameWon()
+    {
+        timer.Stop();
+        MessageBox.Show("Вы выиграли!", "Победа", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        Close();
+    }
+
+    /// <summary>
+    /// Обработчик события поражения в игре.
+    /// </summary>
+    private void OnGameLost()
+    {
+        timer.Stop();
+        MessageBox.Show("Вы проиграли", "Поражение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        Close();
+    }
+
+    /// <summary>
+    /// Загрузка формы: инициализация игры и подписка на события.
+    /// </summary>
     private void Form1_Load(object sender, EventArgs e)
     {
         game = new ArkanoidGame(ClientSize.Width, ClientSize.Height);
 
-        game.StateChanged += () => { RenderToBuffer(); BlitBufferToScreen(); };
-        game.ScoreChanged += (score) => { RenderToBuffer(); BlitBufferToScreen(); };
-        game.GameWon += () =>
-        {
-            timer.Stop();
-            MessageBox.Show("Вы выиграли!", "Победа", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            Close();
-        };
-        game.GameLost += () =>
-        {
-            timer.Stop();
-            MessageBox.Show("Вы проиграли", "Поражение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            Close();
-        };
+        game.StateChanged += UpdateDisplay;
+        game.ScoreChanged += _ => UpdateDisplay();
+        game.GameWon += OnGameWon;
+        game.GameLost += OnGameLost;
 
         InitBuffer();
-        RenderToBuffer();
-        BlitBufferToScreen();
+        UpdateDisplay();
     }
 
+    /// <summary>
+    /// Обработка движения мыши для управления ракеткой.
+    /// </summary>
     private void Form1_MouseMove(object sender, MouseEventArgs e)
     {
         game.MovePaddleTo(e.X);
-        RenderToBuffer();
-        BlitBufferToScreen();
+        UpdateDisplay();
     }
 
+    /// <summary>
+    /// Обработка клика мыши для запуска игры.
+    /// </summary>
     private void Form1_MouseClick(object sender, MouseEventArgs e)
     {
         game.Start();
         timer.Start();
     }
 
+    /// <summary>
+    /// Тик таймера: обновление игровой логики и отрисовка.
+    /// </summary>
     private void Timer_Tick(object sender, EventArgs e)
     {
         game.Update();
-        RenderToBuffer();
-        BlitBufferToScreen();
+        UpdateDisplay();
+    }
+
+    /// <summary>
+    /// Освобождает системные ресурсы (шрифты, буферы) при закрытии формы.
+    /// </summary>
+    protected override void OnFormClosed(FormClosedEventArgs e)
+    {
+        scoreFont.Dispose();
+        bonusFont.Dispose();
+        bufferGraphics?.Dispose();
+        buffer?.Dispose();
+        base.OnFormClosed(e);
     }
 }
