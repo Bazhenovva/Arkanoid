@@ -1,0 +1,42 @@
+# =============== Build Folders ===============
+[Bb]in/
+[Oo]bj/
+
+# =============== Visual Studio ===============
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.v12.suo
+*.v14.suo
+*.v15.suo
+
+# =============== JetBrains Rider ===============
+.idea/
+*.sln.iml
+*.csproj.iml
+
+# =============== ReSharper ===============
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# =============== MSBuild / NuGet ===============
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+arm/
+arm64/
+*.DotSettings
+packages/
+*.nupkg
+*.nuget.props
+*.nuget.targets
+
+# =============== OS & Editors ===============
+Thumbs.db
+.DS_Store
+*.swp
+*~
