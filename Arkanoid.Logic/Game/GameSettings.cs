@@ -1,9 +1,9 @@
-namespace Arkanoid.Game;
+namespace Arkanoid.Logic.Game;
 
 /// <summary>
 /// Глобальные настройки игры "Арканоид".
 /// Содержит константы для размеров, скоростей, позиций и геймплея.
-/// Используется в <see cref="ArkanoidGame"/> и <see cref="GameForm"/>.
+/// Используется в <see cref="ArkanoidGame"/>
 /// </summary>
 public static class GameSettings
 {

@@ -1,10 +1,10 @@
-using Arkanoid.Models;
+using Arkanoid.Logic.Models;
+using System.Drawing;
 
-namespace Arkanoid.Game;
+namespace Arkanoid.Logic.Game;
 
 /// <summary>
 /// Ядро игры "Арканоид". Управляет логикой: физика мяча, коллизии, бонусы, счёт.
-/// Используется в <see cref="GameForm"/> для обновления состояния игры.
 /// </summary>
 public class ArkanoidGame
 {
@@ -22,7 +22,6 @@ public class ArkanoidGame
 
     /// <summary>
     /// Событие изменения счёта. Передаёт новое значение счёта.
-    /// Подписывается <see cref="GameForm"/> для обновления UI.
     /// </summary>
     public event Action<int>? ScoreChanged;
 
@@ -180,7 +179,6 @@ public class ArkanoidGame
 
     /// <summary>
     /// Обновляет состояние игры.
-    /// Вызывается каждый кадр из <see cref="GameForm.Timer_Tick"/>.
     /// </summary>
     public void Update()
     {
@@ -315,7 +313,6 @@ public class ArkanoidGame
     /// Двигает платформу к указанной позиции X.
     /// Если игра не начата — перемещает и мяч вместе с платформой.
     /// </summary>
-
     public void MovePaddleTo(int x)
     {
         var newX = x - Paddle.Rect.Width / 2;

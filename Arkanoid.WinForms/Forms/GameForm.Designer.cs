@@ -1,11 +1,14 @@
-﻿namespace Arkanoid;
-using Arkanoid.Game;
+﻿using System.ComponentModel;
+using Arkanoid.Logic.Game;
+
+namespace Arkanoid.WinForms.Forms;
+
 partial class GameForm
 {
     /// <summary>
     /// Required designer variable.
     /// </summary>
-    private System.ComponentModel.IContainer components = null;
+    private IContainer components = null;
 
     /// <summary>
     /// Clean up any resources being used.
@@ -17,11 +20,6 @@ partial class GameForm
         {
             components.Dispose();
         }
-        // Диспозим свои ресурсы
-        bufferGraphics?.Dispose();
-        buffer?.Dispose();
-        scoreFont?.Dispose();
-        bonusFont?.Dispose();
         base.Dispose(disposing);
     }
 
@@ -39,10 +37,10 @@ partial class GameForm
         //
         // timer
         //
-        this.timer.Interval = GameSettings.TimerInterval;
+        this.timer.Interval = 5;
         this.timer.Tick += new System.EventHandler(this.Timer_Tick);
         //
-        // Form1
+        // GameForm
         //
         this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;

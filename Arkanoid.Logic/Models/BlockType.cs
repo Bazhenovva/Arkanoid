@@ -1,4 +1,4 @@
-namespace Arkanoid.Models;
+namespace Arkanoid.Logic.Models;
 
 /// <summary>
 /// Перечисление типов блоков, определяющее их визуальный стиль и сложность.

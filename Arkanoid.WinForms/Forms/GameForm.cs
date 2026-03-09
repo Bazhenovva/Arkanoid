@@ -1,7 +1,7 @@
-using Arkanoid.Game;
-using Arkanoid.Models;
+using Arkanoid.Logic.Game;
+using Arkanoid.Logic.Models;
 
-namespace Arkanoid;
+namespace Arkanoid.WinForms.Forms;
 
 /// <summary>
 /// Главная форма игры "Арканоид". Отвечает за отрисовку, обработку ввода и связь с игровым ядром.

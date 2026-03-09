@@ -1,4 +1,4 @@
-namespace Arkanoid.Game;
+namespace Arkanoid.Logic.Game;
 
 /// <summary>
 /// Состояния игры "Арканоид".
