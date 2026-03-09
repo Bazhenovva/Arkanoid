@@ -140,12 +140,6 @@ public static class GameSettings
     public const int ImagePositionY = 0;
 
     /// <summary>
-    /// Значение для деления пополам.
-    /// Используется в расчётах центрирования объектов.
-    /// </summary>
-    public const int Half = 2;
-
-    /// <summary>
     /// Диапазон для генерации случайного направления (0 или 1).
     /// </summary>
     public const int DirectionRandomRange = 2;

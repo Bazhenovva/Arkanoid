@@ -12,7 +12,7 @@ public partial class GameForm : Form
     private ArkanoidGame game = null!;
     private Bitmap? buffer;
     private Graphics? bufferGraphics;
-
+    private Graphics? formGraphics;
     private Font scoreFont = new Font("Arial", GameSettings.ScoreFontSize, FontStyle.Bold);
     private Font bonusFont = new Font("Arial", GameSettings.BonusFontSize, FontStyle.Italic);
 
@@ -29,9 +29,6 @@ public partial class GameForm : Form
     /// </summary>
     private void InitBuffer()
     {
-        bufferGraphics?.Dispose();
-        buffer?.Dispose();
-
         if (ClientSize.Width <= 0 || ClientSize.Height <= 0)
         {
             return;
@@ -40,6 +37,7 @@ public partial class GameForm : Form
         buffer = new Bitmap(ClientSize.Width, ClientSize.Height);
         bufferGraphics = Graphics.FromImage(buffer);
         bufferGraphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        formGraphics = CreateGraphics();
     }
 
     /// <summary>
@@ -105,8 +103,7 @@ public partial class GameForm : Form
     {
         if (buffer != null)
         {
-            using var g = CreateGraphics();
-            g.DrawImage(buffer, GameSettings.ImagePositionX, GameSettings.ImagePositionY);
+            formGraphics?.DrawImage(buffer, GameSettings.ImagePositionX, GameSettings.ImagePositionY);
         }
     }
 
@@ -161,7 +158,6 @@ public partial class GameForm : Form
     private void Form1_MouseMove(object sender, MouseEventArgs e)
     {
         game.MovePaddleTo(e.X);
-        UpdateDisplay();
     }
 
     /// <summary>
@@ -191,6 +187,7 @@ public partial class GameForm : Form
         bonusFont.Dispose();
         bufferGraphics?.Dispose();
         buffer?.Dispose();
+        formGraphics?.Dispose();
         base.OnFormClosed(e);
     }
 }

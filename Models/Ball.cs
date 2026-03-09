@@ -8,7 +8,7 @@ public class Ball
     /// <summary>
     /// Границы мяча на игровом поле.Включает позицию и размер.
     /// </summary>
-    public Rectangle Rect { get;  private set; }
+    public Rectangle Rect { get; private set; }
 
     /// <summary>
     /// Горизонтальная скорость мяча.Положительное значение — вправо, отрицательное — влево.

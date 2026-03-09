@@ -98,8 +98,10 @@ public class ArkanoidGame
     /// </summary>
     private void SetFieldSize(int width, int height)
     {
-        MinX = 0; MaxX = width;
-        MinY = 0; MaxY = height;
+        MinX = 0;
+        MaxX = width;
+        MinY = 0;
+        MaxY = height;
     }
 
     /// <summary>
@@ -107,7 +109,7 @@ public class ArkanoidGame
     /// </summary>
     private void InitializeObjects()
     {
-        var startX = (MaxX - GameSettings.BallWidth) / GameSettings.Half;
+        var startX = (MaxX - GameSettings.BallWidth) / 2;
         var startY = MaxY - GameSettings.BallStartOffsetY;
         Ball = new Ball(new Rectangle(startX, startY, GameSettings.BallWidth, GameSettings.BallHeight));
 
@@ -117,7 +119,7 @@ public class ArkanoidGame
         Ball.SpeedX = random.Next(GameSettings.MinSpeedX, GameSettings.MaxSpeedX + GameSettings.RandomMaxInclusive) * direction;
         Ball.SpeedY = random.Next(GameSettings.MinSpeedY, GameSettings.MaxSpeedY + GameSettings.RandomMaxInclusive);
 
-        var paddleX = (MaxX - GameSettings.PaddleWidth) / GameSettings.Half;
+        var paddleX = (MaxX - GameSettings.PaddleWidth) / 2;
         var paddleY = startY + GameSettings.BallHeight;
         Paddle = new Paddle(new Rectangle(paddleX, paddleY, GameSettings.PaddleWidth, GameSettings.PaddleHeight));
 
@@ -130,7 +132,7 @@ public class ArkanoidGame
     private void CreateBlocks()
     {
         var blockWidth = MaxX / GameSettings.Cols;
-        var blockHeight = MaxY / (GameSettings.Rows * GameSettings.Half);
+        var blockHeight = MaxY / (GameSettings.Rows * 2);
         Blocks.Clear();
 
         for (var row = 0; row < GameSettings.Rows; row++)
@@ -150,8 +152,8 @@ public class ArkanoidGame
 
                 var block = new Block(
                     new Rectangle(
-                        x + (GameSettings.BlockBorder / GameSettings.Half),
-                        y + (GameSettings.BlockBorder / GameSettings.Half),
+                        x + (GameSettings.BlockBorder / 2),
+                        y + (GameSettings.BlockBorder / 2),
                         blockWidth - GameSettings.BlockBorder,
                         blockHeight - GameSettings.BlockBorder),
                     health: health,
@@ -232,12 +234,12 @@ public class ArkanoidGame
 
         Ball.SpeedY = -Ball.SpeedY;
 
-        var hitPos = Ball.Rect.X + Ball.Rect.Width / GameSettings.Half - Paddle.Rect.X;
+        var hitPos = Ball.Rect.X + Ball.Rect.Width / 2 - Paddle.Rect.X;
         var zoneWidth = Paddle.Rect.Width / GameSettings.PaddleZones;
 
         Ball.SpeedX = hitPos < zoneWidth
             ? -random.Next(GameSettings.MinSpeedX, GameSettings.MaxSpeedX + GameSettings.RandomMaxInclusive)
-            : hitPos < GameSettings.Half * zoneWidth
+            : hitPos < 2 * zoneWidth
                 ? 0
                 : random.Next(GameSettings.MinSpeedX, GameSettings.MaxSpeedX + GameSettings.RandomMaxInclusive);
 
@@ -316,28 +318,17 @@ public class ArkanoidGame
 
     public void MovePaddleTo(int x)
     {
-        var newX = x - Paddle.Rect.Width / GameSettings.Half;
+        var newX = x - Paddle.Rect.Width / 2;
         newX = Math.Max(MinX, Math.Min(newX, MaxX - Paddle.Rect.Width));
         Paddle.SetPaddlePos(newX);
 
         if (Status == GameStatus.NotStarted)
         {
-            var ballX = Paddle.Rect.X + (Paddle.Rect.Width - Ball.Rect.Width) / GameSettings.Half;
+            var ballX = Paddle.Rect.X + (Paddle.Rect.Width - Ball.Rect.Width) / 2;
             ballX = Math.Max(MinX, Math.Min(ballX, MaxX - Ball.Rect.Width));
             Ball.SetBallPos(ballX, Ball.Rect.Y);
         }
 
-        StateChanged?.Invoke();
-    }
-
-    /// <summary>
-    /// Изменяет размеры игрового поля и пересоздаёт объекты.
-    /// Вызывается при изменении размера окна формы.
-    /// </summary>
-    public void ResizeField(int width, int height)
-    {
-        SetFieldSize(width, height);
-        InitializeObjects();
         StateChanged?.Invoke();
     }
 }
