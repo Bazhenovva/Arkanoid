@@ -13,4 +13,8 @@
     <ProjectReference Include="..\Arkanoid.WinForms\Arkanoid.WinForms.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EditorConfigFiles Remove=".editorconfig" />
+  </ItemGroup>
+
 </Project>

@@ -1,4 +1,6 @@
-namespace Arkanoid.WinForms.Forms;
+using Arkanoid.WinForms.Forms;
+
+namespace Arkanoid.WinForms;
 
 /// <summary>
 /// Точка входа в приложение Arkanoid.
