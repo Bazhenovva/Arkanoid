@@ -12,9 +12,10 @@ public partial class GameForm : Form
     private ArkanoidGame game = null!;
     private Bitmap? buffer;
     private Graphics? bufferGraphics;
-    private Graphics? formGraphics;
-    private Font scoreFont = new Font("Arial", GameSettings.ScoreFontSize, FontStyle.Bold);
-    private Font bonusFont = new Font("Arial", GameSettings.BonusFontSize, FontStyle.Italic);
+    private Font scoreFont = new ("Arial", GameSettings.ScoreFontSize, FontStyle.Bold);
+    private Font bonusFont = new ("Arial", GameSettings.BonusFontSize, FontStyle.Italic);
+
+    private Image? backgroundImage;
 
     /// <summary>
     /// Создаёт новую форму игры и инициализирует компоненты.
@@ -37,7 +38,7 @@ public partial class GameForm : Form
         buffer = new Bitmap(ClientSize.Width, ClientSize.Height);
         bufferGraphics = Graphics.FromImage(buffer);
         bufferGraphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-        formGraphics = CreateGraphics();
+
     }
 
     /// <summary>
@@ -45,15 +46,9 @@ public partial class GameForm : Form
     /// </summary>
     private void RenderToBuffer()
     {
-        if (buffer == null || bufferGraphics == null)
+        if (backgroundImage != null)
         {
-            return;
-        }
-
-        var bg = Properties.Resources.backgroundImg;
-        if (bg != null)
-        {
-            bufferGraphics.DrawImage(bg, GameSettings.ImagePositionX, GameSettings.ImagePositionY, ClientSize.Width, ClientSize.Height);
+            bufferGraphics.DrawImage(backgroundImage, GameSettings.ImagePositionX, GameSettings.ImagePositionY, ClientSize.Width, ClientSize.Height);
         }
         else
         {
@@ -85,7 +80,7 @@ public partial class GameForm : Form
             GameSettings.ScoreTextX,
             GameSettings.ScoreTextY);
 
-        if (game.Ball.Damage > ArkanoidGame.HeavyBallDamageThreshold)
+        if (game.Ball.Damage > GameSettings.HeavyBallDamageThreshold)
         {
             bufferGraphics.DrawString(
                 " ТЯЖЁЛЫЙ МЯЧ!",
@@ -103,7 +98,10 @@ public partial class GameForm : Form
     {
         if (buffer != null)
         {
-            formGraphics?.DrawImage(buffer, GameSettings.ImagePositionX, GameSettings.ImagePositionY);
+            using (var graphics = CreateGraphics())
+            {
+                graphics.DrawImage(buffer, GameSettings.ImagePositionX, GameSettings.ImagePositionY);
+            }
         }
     }
 
@@ -141,6 +139,7 @@ public partial class GameForm : Form
     /// </summary>
     private void Form1_Load(object sender, EventArgs e)
     {
+        backgroundImage = Properties.Resources.backgroundImg;
         game = new ArkanoidGame(ClientSize.Width, ClientSize.Height);
 
         game.StateChanged += UpdateDisplay;
@@ -176,18 +175,5 @@ public partial class GameForm : Form
     {
         game.Update();
         UpdateDisplay();
-    }
-
-    /// <summary>
-    /// Освобождает системные ресурсы (шрифты, буферы) при закрытии формы.
-    /// </summary>
-    protected override void OnFormClosed(FormClosedEventArgs e)
-    {
-        scoreFont.Dispose();
-        bonusFont.Dispose();
-        bufferGraphics?.Dispose();
-        buffer?.Dispose();
-        formGraphics?.Dispose();
-        base.OnFormClosed(e);
     }
 }

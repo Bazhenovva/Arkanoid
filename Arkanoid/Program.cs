@@ -1,7 +1,13 @@
 namespace Arkanoid.WinForms.Forms;
 
-static class Program
+/// <summary>
+/// Точка входа в приложение Arkanoid.
+/// </summary>
+internal static class Program
 {
+    /// <summary>
+    /// Главная точка входа в приложение. Запускает игру Arkanoid.
+    /// </summary>
     [STAThread]
     static void Main()
     {

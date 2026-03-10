@@ -73,11 +73,6 @@ public static class GameSettings
     public const int BallStartOffsetY = 175;
 
     /// <summary>
-    /// Интервал обновления игрового цикла в миллисекундах.
-    /// </summary>
-    public const int TimerInterval = 5;
-
-    /// <summary>
     /// Шанс выпадения бонуса при разрушении блока (в процентах).
     /// </summary>
     public const int BonusChancePercent = 35;
@@ -85,7 +80,7 @@ public static class GameSettings
     /// <summary>
     /// Длительность действия бонуса "Тяжёлый мяч" в секундах.
     /// </summary>
-    public const int HeavyBallDuration = 18;
+    public const int HeavyBallDuration = 10;
 
     /// <summary>
     /// Урон "Тяжёлого мяча" по блокам.
@@ -184,4 +179,9 @@ public static class GameSettings
     /// Здоровье красного блока (уничтожается за 3 удара).
     /// </summary>
     public const int BlockHealthRed = 3;
+
+    /// <summary>
+    /// Порог урона для активации режима тяжёлого мяча.
+    ///</summary>
+    public const int HeavyBallDamageThreshold = 1;
 }

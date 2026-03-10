@@ -8,8 +8,6 @@ namespace Arkanoid.Logic.Game;
 /// </summary>
 public class ArkanoidGame
 {
-    public const int HeavyBallDamageThreshold = 1;
-
     /// <summary>
     /// Время окончания действия бонуса "Тяжёлый мяч".
     /// </summary>
@@ -43,7 +41,7 @@ public class ArkanoidGame
     /// <summary>
     /// Список блоков на игровом поле.
     /// </summary>
-    public List<Block> Blocks { get; } = new List<Block>();
+     public List<Block> Blocks { get; } = [];
 
     /// <summary>
     /// Минимальная координата X игрового поля.
@@ -97,9 +95,7 @@ public class ArkanoidGame
     /// </summary>
     private void SetFieldSize(int width, int height)
     {
-        MinX = 0;
         MaxX = width;
-        MinY = 0;
         MaxY = height;
     }
 
@@ -187,20 +183,13 @@ public class ArkanoidGame
             return;
         }
 
-        MoveBall();
+        Ball.SetBallPos(Ball.Rect.X + Ball.SpeedX, Ball.Rect.Y + Ball.SpeedY);
+
         CheckHeavyBallExpiration();
         CheckWallCollisions();
         CheckPaddleCollision();
         CheckBlockCollisions();
         CheckGameOver();
-    }
-
-    /// <summary>
-    /// Перемещает мяч на следующую позицию.
-    /// </summary>
-    private void MoveBall()
-    {
-        Ball.SetBallPos(Ball.Rect.X + Ball.SpeedX, Ball.Rect.Y + Ball.SpeedY);
     }
 
     /// <summary>
@@ -250,33 +239,30 @@ public class ArkanoidGame
     /// </summary>
     private void CheckBlockCollisions()
     {
-        foreach (var block in Blocks)
+        foreach (var block in Blocks.Where(block => !block.IsDestroyed && Ball.Rect.IntersectsWith(block.Rect)))
         {
-            if (!block.IsDestroyed && Ball.Rect.IntersectsWith(block.Rect))
+            block.Health -= Ball.Damage;
+            Ball.SpeedY = -Ball.SpeedY;
+
+            if (block.Health <= 0)
             {
-                block.Health -= Ball.Damage;
-                Ball.SpeedY = -Ball.SpeedY;
+                block.IsDestroyed = true;
+                Score += block.GetScore();
+                ScoreChanged?.Invoke(Score);
 
-                if (block.Health <= 0)
+                if (block.HasBonus)
                 {
-                    block.IsDestroyed = true;
-                    Score += block.GetScore();
-                    ScoreChanged?.Invoke(Score);
-
-                    if (block.HasBonus)
-                    {
-                        Ball.Damage = GameSettings.HeavyBallDamage;
-                        heavyBallEndTime = DateTime.Now.AddSeconds(GameSettings.HeavyBallDuration);
-                    }
-
-                    if (IsGameWon())
-                    {
-                        Status = GameStatus.Won;
-                        GameWon?.Invoke();
-                    }
+                    Ball.Damage = GameSettings.HeavyBallDamage;
+                    heavyBallEndTime = DateTime.Now.AddSeconds(GameSettings.HeavyBallDuration);
                 }
-                break;
+
+                if (IsGameWon())
+                {
+                    Status = GameStatus.Won;
+                    GameWon?.Invoke();
+                }
             }
+            break;
         }
     }
 
@@ -285,7 +271,7 @@ public class ArkanoidGame
     /// </summary>
     private void CheckHeavyBallExpiration()
     {
-        if (DateTime.Now > heavyBallEndTime && Ball.Damage > HeavyBallDamageThreshold)
+        if (DateTime.Now > heavyBallEndTime && Ball.Damage > GameSettings.HeavyBallDamageThreshold)
         {
             Ball.Damage = 1;
         }

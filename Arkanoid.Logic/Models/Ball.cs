@@ -42,5 +42,5 @@ public class Ball
     /// Вызывается из <see cref="ArkanoidGame.MoveBall()"/>.
     /// </summary>
     public void SetBallPos(int x, int y) =>
-        Rect = new Rectangle(x, y, Rect.Width, Rect.Height);
+        Rect = Rect with { X = x, Y = y };
 }

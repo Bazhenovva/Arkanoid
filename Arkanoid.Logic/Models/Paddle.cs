@@ -24,5 +24,5 @@ public class Paddle
     /// Устанавливает новую горизонтальную позицию платформы. Вертикальная позиция и размер сохраняются.
     /// </summary>
     public void SetPaddlePos(int x) =>
-        Rect = new Rectangle(x, Rect.Y, Rect.Width, Rect.Height);
+        Rect = Rect with { X = x };
 }
