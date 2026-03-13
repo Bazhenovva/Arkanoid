@@ -1,11 +1,14 @@
-﻿namespace Arkanoid;
+﻿using System.ComponentModel;
+using Arkanoid.Logic.Game;
 
-partial class Form1
+namespace Arkanoid.WinForms.Forms;
+
+partial class GameForm
 {
     /// <summary>
     /// Required designer variable.
     /// </summary>
-    private System.ComponentModel.IContainer components = null;
+    private IContainer components = null;
 
     /// <summary>
     /// Clean up any resources being used.
@@ -31,14 +34,14 @@ partial class Form1
         this.components = new System.ComponentModel.Container();
         this.timer = new System.Windows.Forms.Timer(this.components);
         this.SuspendLayout();
-        // 
+        //
         // timer
-        // 
-        this.timer.Interval = 10;
+        //
+        this.timer.Interval = 5;
         this.timer.Tick += new System.EventHandler(this.Timer_Tick);
-        // 
-        // Form1
-        // 
+        //
+        // GameForm
+        //
         this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         this.BackColor = System.Drawing.Color.Black;
@@ -47,11 +50,11 @@ partial class Form1
         this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
         this.MaximizeBox = false;
         this.MinimizeBox = false;
-        this.Name = "Form1";
+        this.Name = "GameForm";
         this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
         this.Text = "Arkanoid";
+        this.KeyPreview = true;
         this.Load += new System.EventHandler(this.Form1_Load);
-        this.Paint += new System.Windows.Forms.PaintEventHandler(this.Form1_Paint);
         this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseClick);
         this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseMove);
         this.ResumeLayout(false);
