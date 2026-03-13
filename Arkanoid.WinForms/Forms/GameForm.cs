@@ -1,5 +1,6 @@
 using Arkanoid.Logic.Game;
 using Arkanoid.Logic.Models;
+using Arkanoid.WinForms.Settings;
 
 namespace Arkanoid.WinForms.Forms;
 
@@ -12,8 +13,8 @@ public partial class GameForm : Form
     private ArkanoidGame game = null!;
     private Bitmap? buffer;
     private Graphics? bufferGraphics;
-    private Font scoreFont = new ("Arial", GameSettings.ScoreFontSize, FontStyle.Bold);
-    private Font bonusFont = new ("Arial", GameSettings.BonusFontSize, FontStyle.Italic);
+    private Font scoreFont = new ("Arial", WinFormsConstants.ScoreFontSize, FontStyle.Bold);
+    private Font bonusFont = new ("Arial", WinFormsConstants.BonusFontSize, FontStyle.Italic);
 
     private Image? backgroundImage;
 
@@ -48,7 +49,7 @@ public partial class GameForm : Form
     {
         if (backgroundImage != null)
         {
-            bufferGraphics.DrawImage(backgroundImage, GameSettings.ImagePositionX, GameSettings.ImagePositionY, ClientSize.Width, ClientSize.Height);
+            bufferGraphics.DrawImage(backgroundImage, WinFormsConstants.ImagePositionX, WinFormsConstants.ImagePositionY, ClientSize.Width, ClientSize.Height);
         }
         else
         {
@@ -77,8 +78,8 @@ public partial class GameForm : Form
             $"Очки: {game.Score}",
             scoreFont,
             Brushes.White,
-            GameSettings.ScoreTextX,
-            GameSettings.ScoreTextY);
+            WinFormsConstants.ScoreTextX,
+            WinFormsConstants.ScoreTextY);
 
         if (game.Ball.Damage > GameSettings.HeavyBallDamageThreshold)
         {
@@ -86,8 +87,8 @@ public partial class GameForm : Form
                 " ТЯЖЁЛЫЙ МЯЧ!",
                 bonusFont,
                 Brushes.Orange,
-                ClientSize.Width - GameSettings.BonusTextX,
-                GameSettings.BonusTextY);
+                ClientSize.Width - WinFormsConstants.BonusTextX,
+                WinFormsConstants.BonusTextY);
         }
     }
 
@@ -100,7 +101,7 @@ public partial class GameForm : Form
         {
             using (var graphics = CreateGraphics())
             {
-                graphics.DrawImage(buffer, GameSettings.ImagePositionX, GameSettings.ImagePositionY);
+                graphics.DrawImage(buffer, WinFormsConstants.ImagePositionX, WinFormsConstants.ImagePositionY);
             }
         }
     }
